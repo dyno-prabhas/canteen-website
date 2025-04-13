@@ -15,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import Link from "next/link"
+import { getWeatherCategory } from "@/utils/getWeatherCategory"
 
 interface MenuItem {
   id: number
@@ -61,9 +62,18 @@ export default function SuggestMeDialog({ menuItems }: SuggestMeDialogProps) {
   // In a real app, you would fetch the weather from an API
   // For now, we'll just simulate it with a random selection
   useEffect(() => {
-    const weatherOptions = ["sunny", "rainy", "cold", "hot"]
-    const randomWeather = weatherOptions[Math.floor(Math.random() * weatherOptions.length)]
-    setCurrentWeather(randomWeather)
+
+    const fetchWeather = async() => {
+        try {
+            const category = await getWeatherCategory();
+            // const weather = category?.toString;
+            setCurrentWeather(category)
+        } catch (err) {
+            console.log(err); 
+        }
+    };
+    fetchWeather();
+
   }, [])
 
   // Generate suggestions based on time and weather
