@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import MenuItemCard from "@/components/menu/menu-item-card"
+import SuggestMeDialog from "@/components/menu/suggest-me-dialog"
 
 // Sample menu data - in a real app, this would come from an API
 const categories = [
@@ -26,6 +27,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "lunch",
     rating: 4.8,
+    tags: ["filling", "protein", "lunch", "dinner"],
   },
   {
     id: 2,
@@ -35,6 +37,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "lunch",
     rating: 4.6,
+    tags: ["vegetarian", "filling", "lunch", "dinner"],
   },
   {
     id: 3,
@@ -44,6 +47,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "beverages",
     rating: 4.9,
+    tags: ["cold", "refreshing", "light", "morning"],
   },
   {
     id: 4,
@@ -53,6 +57,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "desserts",
     rating: 4.7,
+    tags: ["sweet", "morning", "snack"],
   },
   {
     id: 5,
@@ -62,6 +67,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "breakfast",
     rating: 4.5,
+    tags: ["filling", "protein", "morning"],
   },
   {
     id: 6,
@@ -71,6 +77,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "lunch",
     rating: 4.4,
+    tags: ["light", "healthy", "lunch"],
   },
   {
     id: 7,
@@ -80,6 +87,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "snacks",
     rating: 4.3,
+    tags: ["crunchy", "snack", "light"],
   },
   {
     id: 8,
@@ -89,6 +97,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "beverages",
     rating: 4.8,
+    tags: ["hot", "morning", "warm"],
   },
   {
     id: 9,
@@ -98,6 +107,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "breakfast",
     rating: 4.7,
+    tags: ["sweet", "morning", "filling"],
   },
   {
     id: 10,
@@ -107,6 +117,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "desserts",
     rating: 4.9,
+    tags: ["sweet", "dessert", "comfort"],
   },
   {
     id: 11,
@@ -116,6 +127,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "beverages",
     rating: 4.5,
+    tags: ["cold", "refreshing", "light"],
   },
   {
     id: 12,
@@ -125,6 +137,7 @@ const menuItems = [
     image: "/placeholder.svg?height=300&width=300",
     category: "snacks",
     rating: 4.2,
+    tags: ["healthy", "light", "morning", "snack"],
   },
 ]
 
@@ -150,6 +163,7 @@ export default function MenuPage() {
               </TabsList>
 
               <div className="flex items-center gap-2">
+                <SuggestMeDialog menuItems={menuItems} />
                 <Button variant="outline" size="sm" className="flex items-center">
                   <Filter className="h-4 w-4 mr-2" />
                   Filter

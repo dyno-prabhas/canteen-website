@@ -34,6 +34,7 @@ const menuItems = [
     },
     allergens: ["Gluten", "Eggs", "Mustard"],
     preparationTime: "10-15 minutes",
+    tags: ["filling", "protein", "lunch", "dinner"],
   },
   {
     id: 2,
@@ -55,6 +56,7 @@ const menuItems = [
     },
     allergens: ["Gluten", "Milk"],
     preparationTime: "12-18 minutes",
+    tags: ["vegetarian", "filling", "lunch", "dinner"],
   },
   // Add more items as needed
 ]
@@ -108,9 +110,9 @@ export default function ProductDetail() {
   }
 
   const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
+    setIsFavorite(!isFavorite)
     const title = isFavorite ? "Removed from favorites" : "Added to favorites";
-    toast(title, {
+    toast( title ,{
       description: isFavorite
         ? `${product.name} has been removed from your favorites`
         : `${product.name} has been added to your favorites`,
@@ -250,6 +252,16 @@ export default function ProductDetail() {
                   </Badge>
                 ))}
               </div>
+
+              {product.tags && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {product.tags.map((tag: string) => (
+                    <Badge key={tag} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
