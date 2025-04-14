@@ -12,6 +12,8 @@ export default function Home() {
   const categories = [
     { name: "Breakfast", icon: Coffee, href: "/menu/breakfast" },
     { name: "Lunch", icon: Utensils, href: "/menu/lunch" },
+    { name: "Dinner", icon: Utensils, href: "/menu/dinner" },
+    { name: "Supper", icon: Coffee, href: "/menu/supper" },
     { name: "Snacks", icon: Coffee, href: "/menu/snacks" },
     { name: "Beverages", icon: Coffee, href: "/menu/beverages" },
   ]
@@ -227,4 +229,3 @@ export default function Home() {
     </>
   )
 }
-
