@@ -17,6 +17,7 @@ interface MenuItem {
   image: string
   category: string
   rating: number
+  tags?: string[]
 }
 
 interface MenuItemCardProps {
@@ -49,15 +50,18 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
     }, 300)
   }
 
+  // Make sure we're using the correct ID format
+  const productId = item.id.toString()
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
-      <Link href={`/menu/item/${item.id}`}>
+      <Link href={`/menu/item/${productId}`}>
         <div className="relative h-48">
           <Image src={item.image || "/placeholder.svg"} alt={item.name} fill style={{ objectFit: "cover" }} />
         </div>
       </Link>
       <CardContent className="p-4">
-        <Link href={`/menu/item/${item.id}`}>
+        <Link href={`/menu/item/${productId}`}>
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg font-semibold">{item.name}</h3>
             <div className="flex items-center text-yellow-500">
@@ -77,4 +81,3 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
     </Card>
   )
 }
-

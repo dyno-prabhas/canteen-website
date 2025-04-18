@@ -117,7 +117,7 @@ export default function Home() {
         </section>
 
         {/* Recommendations Section (Client Component) */}
-        <ClientRecommendations />
+        {/* <ClientRecommendations /> */}
 
         {/* Popular Items Section */}
         <section className="py-16">

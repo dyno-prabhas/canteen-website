@@ -1,9 +1,26 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { categories, menuItems } from "@/app/menu/menu-data"
+import { categories } from "@/app/menu/menu-data"
 import MenuItemCard from "@/components/menu/menu-item-card"
 import SuggestMeDialog from "@/components/menu/suggest-me-dialog"
+import { fetchProducts } from "@/lib/api"
+import { Skeleton } from "@/components/ui/skeleton"
+
+interface MenuItem {
+  id: number
+  name: string
+  description: string
+  price: number
+  image: string
+  category: string
+  categorySlug: string
+  rating: number
+  tags: string[]
+}
 
 interface CategoryPageProps {
   category: string
@@ -12,8 +29,26 @@ interface CategoryPageProps {
 }
 
 export default function CategoryPage({ category, title, description }: CategoryPageProps) {
-  // Filter menu items by category
-  const filteredItems = category === "all" ? menuItems : menuItems.filter((item) => item.category === category)
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      setLoading(true)
+      try {
+        // If category is "all", don't filter by category
+        const categoryParam = category === "all" ? undefined : category
+        const products = await fetchProducts({ category: categoryParam })
+        setMenuItems(products)
+      } catch (error) {
+        console.error("Error loading products:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [category])
 
   return (
     <>
@@ -43,14 +78,33 @@ export default function CategoryPage({ category, title, description }: CategoryP
           <SuggestMeDialog menuItems={menuItems} />
           <Button variant="outline" size="sm" className="flex items-center">
             <Filter className="h-4 w-4 mr-2" />
-            Filter
+            <span className="hidden sm:inline">Filter</span>
           </Button>
         </div>
       </div>
 
-      {filteredItems.length > 0 ? (
+      {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => (
+          {Array(6)
+            .fill(0)
+            .map((_, i) => (
+              <div key={i} className="rounded-lg overflow-hidden border">
+                <Skeleton className="h-48 w-full" />
+                <div className="p-4">
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-full mb-4" />
+                  <div className="flex justify-between">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-9 w-28" />
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+      ) : menuItems.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {menuItems.map((item) => (
             <MenuItemCard key={item.id} item={item} />
           ))}
         </div>

@@ -62,18 +62,16 @@ export default function SuggestMeDialog({ menuItems }: SuggestMeDialogProps) {
   // In a real app, you would fetch the weather from an API
   // For now, we'll just simulate it with a random selection
   useEffect(() => {
-
     const fetchWeather = async() => {
-        try {
-            const category = await getWeatherCategory();
-            // const weather = category?.toString;
-            setCurrentWeather(category)
-        } catch (err) {
-            console.log(err); 
-        }
+      try {
+          const category = await getWeatherCategory();
+          // const weather = category?.toString;
+          setCurrentWeather(category)
+      } catch (err) {
+          console.log(err); 
+      }
     };
     fetchWeather();
-
   }, [])
 
   // Generate suggestions based on time and weather
@@ -263,39 +261,41 @@ export default function SuggestMeDialog({ menuItems }: SuggestMeDialogProps) {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="flex items-center">
-          <Clock className="h-4 w-4 mr-2" />
-          Suggest Me
+          <Clock className="h-4 w-4 mr-1 sm:mr-2" />
+          <span className="text-xs sm:text-sm">Suggest Me</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Food Suggestions</DialogTitle>
-          <DialogDescription>Personalized recommendations based on time and weather</DialogDescription>
+      <DialogContent className="sm:max-w-[600px] w-[95vw] max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="text-lg sm:text-xl">Food Suggestions</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
+            Personalized recommendations based on time and weather
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="time" onValueChange={(value) => setSelectedFactor(value as "time" | "weather")}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="time" className="flex items-center">
+          <TabsList className="grid w-full grid-cols-2 h-auto">
+            <TabsTrigger value="time" className="flex items-center py-2 px-3">
               <Clock className="h-4 w-4 mr-2" />
-              Based on Time
+              <span className="text-xs sm:text-sm">Based on Time</span>
             </TabsTrigger>
-            <TabsTrigger value="weather" className="flex items-center">
+            <TabsTrigger value="weather" className="flex items-center py-2 px-3">
               <Cloud className="h-4 w-4 mr-2" />
-              Based on Weather
+              <span className="text-xs sm:text-sm">Based on Weather</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="time" className="mt-4">
             <div className="flex items-center mb-4">
               {getTimeIcon()}
-              <span className="ml-2 font-medium">{getTimeText()}</span>
+              <span className="ml-2 font-medium text-sm sm:text-base">{getTimeText()}</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {suggestions.map((item) => (
                 <Link key={item.id} href={`/menu/item/${item.id}`}>
                   <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
-                    <div className="relative h-32">
+                    <div className="relative h-24 sm:h-32">
                       <Image
                         src={item.image || "/placeholder.svg"}
                         alt={item.name}
@@ -303,10 +303,10 @@ export default function SuggestMeDialog({ menuItems }: SuggestMeDialogProps) {
                         style={{ objectFit: "cover" }}
                       />
                     </div>
-                    <CardContent className="p-3">
-                      <h3 className="font-medium text-sm">{item.name}</h3>
-                      <p className="text-sm text-gray-500 truncate">{item.description}</p>
-                      <p className="font-bold text-orange-500 mt-1">${item.price.toFixed(2)}</p>
+                    <CardContent className="p-2 sm:p-3">
+                      <h3 className="font-medium text-xs sm:text-sm line-clamp-1">{item.name}</h3>
+                      <p className="text-xs text-gray-500 truncate">{item.description}</p>
+                      <p className="font-bold text-orange-500 mt-1 text-xs sm:text-sm">${item.price.toFixed(2)}</p>
                     </CardContent>
                   </Card>
                 </Link>
@@ -317,14 +317,14 @@ export default function SuggestMeDialog({ menuItems }: SuggestMeDialogProps) {
           <TabsContent value="weather" className="mt-4">
             <div className="flex items-center mb-4">
               {getWeatherIcon()}
-              <span className="ml-2 font-medium">{getWeatherText()}</span>
+              <span className="ml-2 font-medium text-sm sm:text-base">{getWeatherText()}</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {suggestions.map((item) => (
                 <Link key={item.id} href={`/menu/item/${item.id}`}>
                   <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
-                    <div className="relative h-32">
+                    <div className="relative h-24 sm:h-32">
                       <Image
                         src={item.image || "/placeholder.svg"}
                         alt={item.name}
@@ -332,10 +332,10 @@ export default function SuggestMeDialog({ menuItems }: SuggestMeDialogProps) {
                         style={{ objectFit: "cover" }}
                       />
                     </div>
-                    <CardContent className="p-3">
-                      <h3 className="font-medium text-sm">{item.name}</h3>
-                      <p className="text-sm text-gray-500 truncate">{item.description}</p>
-                      <p className="font-bold text-orange-500 mt-1">${item.price.toFixed(2)}</p>
+                    <CardContent className="p-2 sm:p-3">
+                      <h3 className="font-medium text-xs sm:text-sm line-clamp-1">{item.name}</h3>
+                      <p className="text-xs text-gray-500 truncate">{item.description}</p>
+                      <p className="font-bold text-orange-500 mt-1 text-xs sm:text-sm">${item.price.toFixed(2)}</p>
                     </CardContent>
                   </Card>
                 </Link>
