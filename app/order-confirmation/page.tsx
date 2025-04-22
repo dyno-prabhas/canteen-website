@@ -2,17 +2,19 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import Header from "../components/Header"
+import Header from "@/components/layout/header"
+
+
 
 export default function OrderConfirmation() {
   const [status, setStatus] = useState<"success" | "error" | "loading">("loading")
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    const paymentIntent = searchParams.get("payment_intent")
-    const paymentIntentClientSecret = searchParams.get("payment_intent_client_secret")
+    const paymentIntent = searchParams?.get("payment_intent")
+    const paymentIntentClientSecret = searchParams?.get("payment_intent_client_secret")
 
-    if (paymentIntent && paymentIntentClientSecret) {
+    if (paymentIntent && paymentIntentClientSecret) { 
       // Here you would typically verify the payment with your backend
       // and update the order status in your database
       setStatus("success")

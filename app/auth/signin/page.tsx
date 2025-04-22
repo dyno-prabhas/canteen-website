@@ -6,12 +6,13 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
-import { Coffee, Mail, Lock, Eye, EyeOff } from "lucide-react"
+import { Coffee, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function SignInPage() {
   const router = useRouter()
@@ -20,16 +21,16 @@ export default function SignInPage() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const callbackUrl = searchParams.get("callbackUrl") || "/"
+  const callbackUrl = searchParams?.get("callbackUrl") || "/"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
 
     if (!email || !password) {
-      toast("Error", {
-        description: "Please enter both email and password",
-      })
+      setError("Please enter both email and password")
       return
     }
 
@@ -43,15 +44,29 @@ export default function SignInPage() {
       })
 
       if (result?.error) {
-        toast("Error", {
-          description: "Invalid email or password",
+        // Handle specific error messages
+        if (result.error.includes("Invalid email or password")) {
+          setError("The email or password you entered is incorrect.")
+        } else if (result.error.includes("Invalid Supabase configuration")) {
+          setError("The authentication service is currently unavailable. Please try again later.")
+        } else {
+          setError(result.error)
+        }
+
+        toast("Sign in failed", {
+          description: result.error,
         })
       } else {
+        toast("Success", {
+          description: "You have been signed in successfully!",
+        })
         router.push(callbackUrl)
       }
-    } catch (error) {
-      toast("Error", {
-        description: "Something went wrong. Please try again.",
+    } catch (error: any) {
+      setError(error.message || "Something went wrong. Please try again.")
+      toast("Sign in failed", {
+        description: error.message || "Something went wrong. Please try again.",
+        
       })
     } finally {
       setIsLoading(false)
@@ -78,6 +93,13 @@ export default function SignInPage() {
             <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -147,4 +169,3 @@ export default function SignInPage() {
     </div>
   )
 }
-

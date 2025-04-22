@@ -67,4 +67,24 @@ export async function fetchCategories() {
       return null
     }
   }
-  
+
+  export async function updateProfile(id: string, profile: any) {
+    try {
+      const response = await fetch(`/api/profile/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profile),
+      })
+      if (!response.ok) {
+        throw new Error("Failed to update profile")
+      }
+      return await response.json()
+    } catch (error) {
+      console.error("Error updating profile:", error)
+      return null
+    }
+  }
+
+

@@ -10,20 +10,24 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
+import { supabase } from "@/lib/supabase"
 
 interface OrderItem {
   id: number
-  name: string
-  price: number
+  product_id: number
   quantity: number
+  price: number
+  product: {
+    name: string
+  }
 }
 
 interface Order {
   id: number
-  date: string
-  status: "pending" | "processing" | "delivered" | "cancelled"
-  total: number
-  items: OrderItem[]
+  created_at: string
+  status: string
+  total_amount: number
+  order_items: OrderItem[]
 }
 
 export default function OrdersPage() {
@@ -38,49 +42,38 @@ export default function OrdersPage() {
     }
 
     if (status === "authenticated") {
-      // Simulate API call
-      setTimeout(() => {
-        setOrders([
-          {
-            id: 1001,
-            date: "2023-06-15T14:30:00Z",
-            status: "delivered",
-            total: 18.97,
-            items: [
-              { id: 1, name: "Chicken Sandwich", price: 5.99, quantity: 2 },
-              { id: 3, name: "Fruit Smoothie", price: 3.99, quantity: 1 },
-              { id: 7, name: "Potato Chips", price: 1.99, quantity: 1 },
-            ],
-          },
-          {
-            id: 1002,
-            date: "2023-06-10T12:15:00Z",
-            status: "delivered",
-            total: 14.47,
-            items: [
-              { id: 2, name: "Vegetable Pasta", price: 6.49, quantity: 1 },
-              { id: 8, name: "Hot Coffee", price: 2.29, quantity: 2 },
-              { id: 4, name: "Chocolate Muffin", price: 2.49, quantity: 1 },
-            ],
-          },
-          {
-            id: 1003,
-            date: new Date().toISOString(),
-            status: "processing",
-            total: 12.97,
-            items: [
-              { id: 6, name: "Caesar Salad", price: 5.49, quantity: 1 },
-              { id: 3, name: "Fruit Smoothie", price: 3.99, quantity: 1 },
-              { id: 4, name: "Chocolate Muffin", price: 2.49, quantity: 1 },
-            ],
-          },
-        ])
-        setLoading(false)
-      }, 1000)
+      fetchOrders()
     }
   }, [status, router])
 
-  const getStatusIcon = (status: Order["status"]) => {
+  const fetchOrders = async () => {
+    try {
+      setLoading(true)
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          order_items (
+            *,
+            product:products (
+              name
+            )
+          )
+        `)
+        .eq('user_id', session?.user?.id)
+        .order('created_at', { ascending: false })
+
+      if (ordersError) throw ordersError
+
+      setOrders(ordersData || [])
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "pending":
         return <Clock className="h-5 w-5 text-yellow-500" />
@@ -90,10 +83,12 @@ export default function OrdersPage() {
         return <CheckCircle className="h-5 w-5 text-green-500" />
       case "cancelled":
         return <XCircle className="h-5 w-5 text-red-500" />
+      default:
+        return <Clock className="h-5 w-5 text-yellow-500" />
     }
   }
 
-  const getStatusText = (status: Order["status"]) => {
+  const getStatusText = (status: string) => {
     switch (status) {
       case "pending":
         return "Pending"
@@ -103,10 +98,12 @@ export default function OrdersPage() {
         return "Delivered"
       case "cancelled":
         return "Cancelled"
+      default:
+        return "Pending"
     }
   }
 
-  const getStatusColor = (status: Order["status"]) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
         return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
@@ -116,6 +113,8 @@ export default function OrdersPage() {
         return "bg-green-100 text-green-800 hover:bg-green-200"
       case "cancelled":
         return "bg-red-100 text-red-800 hover:bg-red-200"
+      default:
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
     }
   }
 
@@ -181,22 +180,22 @@ export default function OrdersPage() {
                           </Badge>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          Placed on {new Date(order.date).toLocaleDateString()} at{" "}
-                          {new Date(order.date).toLocaleTimeString()}
+                          Placed on {new Date(order.created_at).toLocaleDateString()} at{" "}
+                          {new Date(order.created_at).toLocaleTimeString()}
                         </p>
                       </div>
                       <div className="mt-4 md:mt-0">
-                        <span className="font-semibold text-lg">${order.total.toFixed(2)}</span>
+                        <span className="font-semibold text-lg">${order.total_amount.toFixed(2)}</span>
                       </div>
                     </div>
 
                     <div className="border-t border-gray-200 dark:border-gray-800 pt-4 mt-4">
                       <h4 className="font-medium mb-2">Items</h4>
                       <ul className="space-y-2">
-                        {order.items.map((item) => (
+                        {order.order_items.map((item) => (
                           <li key={item.id} className="flex justify-between">
                             <span>
-                              {item.quantity} x {item.name}
+                              {item.quantity} x {item.product.name}
                             </span>
                             <span className="text-gray-600 dark:text-gray-400">
                               ${(item.price * item.quantity).toFixed(2)}

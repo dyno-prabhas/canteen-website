@@ -13,6 +13,7 @@ import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { useCart } from "@/hooks/use-cart"
 import { toast } from "sonner"
+import { supabase } from "@/lib/supabase"
 
 export default function CartPage() {
   const router = useRouter()
@@ -25,24 +26,75 @@ export default function CartPage() {
   const deliveryFee = items.length > 0 ? 2.99 : 0
   const total = subtotal + tax + deliveryFee
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (status === "unauthenticated") {
-      // Redirect to sign in if not authenticated
       router.push("/auth/signin?callbackUrl=/cart")
       return
     }
 
     setIsProcessing(true)
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Create the order
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: session?.user?.id,
+          total_amount: total,
+          status: 'pending',
+          payment_status: 'pending',
+          payment_method: 'card',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+
+      if (orderError) {
+        toast.error("Error inserting order:", orderError.message)
+        throw orderError
+      }
+
+
+      const order_id = order.id
+
+      console.log("Order ID:", order_id)
+
+      // Create order items for each cart item
+      const orderItems = items.map(item => ({
+        order_id: order_id,
+        product_id: item.id,
+        quantity: item.quantity,
+        price: item.price,
+        created_at: new Date().toISOString()
+      }))
+
+      console.log("Order Items:", orderItems)
+
+      // Insert all order items in a single transaction
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems)
+
+      console.log("Items Error:", itemsError)
+
+      if (itemsError) {
+        toast.error("Error inserting order items:", itemsError.message)
+        throw itemsError
+      }
+
       clearCart()
-      setIsProcessing(false)
-      toast("Order placed successfully!", {
+      toast.success("Order placed successfully!", {
         description: "Your order has been placed and will be delivered soon.",
       })
       router.push("/orders")
-    }, 1500)
+    } catch (error) {
+      console.error('Error creating order:', error)
+      toast.error("Failed to place order. Please try again.")
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   return (

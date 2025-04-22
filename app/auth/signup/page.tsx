@@ -5,13 +5,15 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Coffee, Mail, Lock, User, Eye, EyeOff } from "lucide-react"
+import { Coffee, Mail, Lock, User, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { createUser } from "@/lib/supabase"
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -25,6 +27,7 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [acceptTerms, setAcceptTerms] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -33,45 +36,53 @@ export default function SignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
 
     // Basic validation
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      toast("Error", {
-        description: "Please fill in all fields",
-      })
+      setError("Please fill in all fields")
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast("Error", {
-        description: "Passwords do not match",
-      })
+      setError("Passwords do not match")
       return
     }
 
     if (!acceptTerms) {
-      toast("Error", {
-        description: "Please accept the terms and conditions",
-      })
+      setError("Please accept the terms and conditions")
       return
     }
 
     setIsLoading(true)
 
     try {
-      // In a real app, you would call your API to register the user
-      // For now, we'll simulate a successful registration
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      // Create the user in Supabase
+      const result = await createUser(formData.email, formData.password, formData.name)
+
 
       toast("Success", {
-        description: "Your account has been created successfully!",
+        description: `Your account has been created successfully! You can now sign in.${
+          result
+        }`,
       })
 
       // Redirect to sign in page
       router.push("/auth/signin")
-    } catch (error) {
-      toast("Error", {
-        description: "Something went wrong. Please try again.",
+    } catch (error: any) {
+      console.error("Signup error:", error)
+
+      // Handle specific Supabase errors
+      if (error.message?.includes("User already registered")) {
+        setError("This email is already registered. Please sign in instead.")
+      } else if (error.message?.includes("Invalid Supabase configuration")) {
+        setError("The authentication service is currently unavailable. Please try again later.")
+      } else {
+        setError(error.message || "Something went wrong. Please try again.")
+      }
+
+      toast("Sign up failed", {
+        description: error.message || "Something went wrong. Please try again.",
       })
     } finally {
       setIsLoading(false)
@@ -96,6 +107,13 @@ export default function SignUpPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
@@ -229,4 +247,3 @@ export default function SignUpPage() {
     </div>
   )
 }
-

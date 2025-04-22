@@ -15,6 +15,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { toast } from "sonner"
+import { getUserProfile, updateUserProfile } from "@/lib/supabase"
+
 
 interface UserProfile {
   name: string
@@ -42,13 +44,19 @@ export default function ProfilePage() {
 
     if (status === "authenticated") {
       // Simulate API call
-      setTimeout(() => {
+      setTimeout(async () => {
+
+        const userProfile = await getUserProfile(session?.user?.id)
+
+        console.log("userProfile", userProfile)
+
         setProfile({
-          name: "John Doe",
-          email: session?.user?.email || "john.doe@example.com",
-          phone: "+1 (555) 123-4567",
-          address: "123 Campus Drive, University District",
+          name: userProfile?.full_name || "",
+          email: userProfile?.email || "",
+          phone: userProfile?.phone || "",
+          address: userProfile?.address || "",
         })
+
         setLoading(false)
       }, 1000)
     }
@@ -59,13 +67,19 @@ export default function ProfilePage() {
     setProfile((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsEditing(false)
+    try {
+      const userProfile = await updateUserProfile(session?.user?.id, profile)
 
-    // Simulate API call
     toast("Profile updated", {
-      description: "Your profile has been updated successfully.",
-    })
+        description: `Your profile has been updated successfully.${userProfile}`,
+      })
+    } catch (error) {
+      toast("Error updating profile", {
+        description: `Error updating profile: ${error}`,
+      })
+    }
   }
 
   if (status === "loading" || loading) {
@@ -259,4 +273,3 @@ export default function ProfilePage() {
     </>
   )
 }
-

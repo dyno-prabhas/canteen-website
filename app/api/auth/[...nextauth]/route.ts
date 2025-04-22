@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { supabase } from "@/lib/supabase"
+import { signInUser, getUserProfile } from "@/lib/supabase"
 
 const handler = NextAuth({
   providers: [
@@ -12,28 +12,36 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          throw new Error("Email and password are required")
         }
 
         try {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: credentials.email,
-            password: credentials.password,
-          })
+          // Use our helper function to sign in the user
+          const { user } = await signInUser(credentials.email, credentials.password)
 
-          if (error) {
-            console.error("Authentication error:", error.message)
-            return null
+          if (!user) {
+            throw new Error("Invalid email or password")
           }
+
+          // Get the user profile for additional information
+          const profile = await getUserProfile(user.id)
 
           return {
-            id: data.user?.id,
-            email: data.user?.email,
-            name: data.user?.user_metadata?.full_name || null,
+            id: user.id,
+            email: user.email,
+            name: profile?.full_name || user.user_metadata?.full_name || null,
           }
-        } catch (error) {
-          console.error("Supabase auth error:", error)
-          return null
+        } catch (error: any) {
+          console.error("Authentication error:", error.message)
+
+          // Handle specific Supabase errors
+          if (error.message?.includes("Invalid login credentials")) {
+            throw new Error("Invalid email or password")
+          } else if (error.message?.includes("Invalid Supabase configuration")) {
+            throw new Error("Authentication service unavailable")
+          } else {
+            throw new Error(error.message || "Authentication failed")
+          }
         }
       },
     }),
@@ -56,13 +64,15 @@ const handler = NextAuth({
   },
   pages: {
     signIn: "/auth/signin",
+    signOut: "/auth/signout",
+    error: "/auth/error",
   },
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET,
 })
 
 export { handler as GET, handler as POST }
-

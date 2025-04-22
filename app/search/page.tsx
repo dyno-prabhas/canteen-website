@@ -11,6 +11,7 @@ import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { useCart } from "@/hooks/use-cart"
 import { toast } from "sonner"
+import { supabase } from "@/lib/supabase"
 
 interface Product {
   id: number
@@ -24,47 +25,40 @@ interface Product {
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
-  const query = searchParams.get("q") || ""
+  const query = searchParams?.get("q") || ""
   const { addItem } = useCart()
   const [results, setResults] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (query) {
-      setLoading(true)
+    async function searchProducts() {
+      if (query) {
+        setLoading(true)
+        try {
+          const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+            .order('name')
 
-      // Simulate API call
-      setTimeout(() => {
-        // Mock search results
-        const mockResults = [
-          {
-            id: 1,
-            name: "Chicken Sandwich",
-            description: "Grilled chicken with fresh vegetables and special sauce",
-            price: 5.99,
-            image: "/placeholder.svg?height=300&width=300",
-            category: "lunch",
-            rating: 4.8,
-          },
-          {
-            id: 3,
-            name: "Fruit Smoothie",
-            description: "Blend of fresh fruits with yogurt and honey",
-            price: 3.99,
-            image: "/placeholder.svg?height=300&width=300",
-            category: "beverages",
-            rating: 4.9,
-          },
-        ].filter(
-          (item) =>
-            item.name.toLowerCase().includes(query.toLowerCase()) ||
-            item.description.toLowerCase().includes(query.toLowerCase()),
-        )
+          if (error) {
+            throw error
+          }
 
-        setResults(mockResults)
+          setResults(data || [])
+        } catch (error) {
+          console.error('Error searching products:', error)
+          toast.error('Failed to search products')
+        } finally {
+          setLoading(false)
+        }
+      } else {
+        setResults([])
         setLoading(false)
-      }, 1000)
+      }
     }
+
+    searchProducts()
   }, [query])
 
   const handleAddToCart = (product: Product) => {
