@@ -4,11 +4,11 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { categories } from "@/app/menu/menu-data"
 import MenuItemCard from "@/components/menu/menu-item-card"
 import SuggestMeDialog from "@/components/menu/suggest-me-dialog"
 import { fetchProducts } from "@/lib/api"
 import { Skeleton } from "@/components/ui/skeleton"
+import { categories } from "@/app/menu/menu-data"
 
 interface MenuItem {
   id: number
